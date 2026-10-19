@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import subprocess, json, os, re, time, socket, ssl
 import urllib.request, urllib.parse
 from bs4 import BeautifulSoup
+import tools as T
 import concurrent.futures
 
 app = FastAPI(title="Recon Orchestrator", version="3.0.0")
@@ -357,11 +358,13 @@ async def scan(req: ScanRequest):
     host = domain.split(":")[0]
     result = {"target":target,"domain":domain,"scanned_at":time.strftime("%Y-%m-%d %H:%M:%S"),"tools":{},"all_vulnerabilities":[]}
 
-    html,status,headers = fetch(target)
-    if html is None:
-        return {"ok":False,"error":"Gagal fetch: "+headers.get("error","")}
+    # 20 tools via tools.py
+    t_res = T.run_all_20(target, host, domain)
+    if "error" in t_res:
+        return {"ok":False,"error":t_res["error"]}
     
-    result["tools"]["http_status"] = {"status":status,"size":len(html),"server":headers.get("Server","?")}
+    result["tools"] = t_res
+    result["tools"]["http_status"] = {"status":200,"server":t_res.get("technology",[{}])[0].get("name","?") if t_res.get("technology") else "?"}
     
     sh = security_headers(headers)
     result["tools"]["security_headers"] = sh
