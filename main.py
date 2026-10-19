@@ -348,7 +348,10 @@ async function go(){
 
 @app.post("/scan")
 async def scan(req: ScanRequest):
-    target = req.target.rstrip("/")
+    target = req.target.strip().rstrip("/")
+    # Auto-prepend https:// kalau gak ada skema
+    if not target.startswith(("http://", "https://")):
+        target = "https://" + target
     parsed = urllib.parse.urlparse(target)
     domain = parsed.netloc
     host = domain.split(":")[0]
