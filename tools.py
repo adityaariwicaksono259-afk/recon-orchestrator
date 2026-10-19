@@ -1,6 +1,7 @@
 import re, json, socket, ssl, subprocess, urllib.parse, urllib.request
 from bs4 import BeautifulSoup
 import concurrent.futures
+import tools_assets as TA
 
 # ============================================
 # TOOLS: PASSIVE RECON
@@ -241,6 +242,7 @@ def run_all_20(target, host, domain):
     out["email_harvest"] = tool_email_harvest(html, target)
     out["comment_harvest"] = tool_comment_harvest(html)
     out["waf_detect"] = tool_waf_detect(headers, html)
+    out["assets_parsed"] = TA.parse_all_assets(html, target)
 
     return out
 
